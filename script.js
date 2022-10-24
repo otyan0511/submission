@@ -77,10 +77,12 @@ function tambahListBook(listBookObject){
     divArticle.classList.add('book_item');
     divArticle.append(textTitle, textAuthor, textTahun, buttonBox);
     divArticle.setAttribute('id', `buku-${id}`);
-
+    textTitle.addEventListener('click', function(){
+        editListBook(id);
+    });
     return divArticle;
 }
-
+``
 
 function addBook() {
     const textTitle = document.getElementById('inputBookTitle').value;
@@ -115,6 +117,14 @@ document.addEventListener(RENDER_EVENT, function(){
     inCompletedBook.innerHTML = '';
     completedBook.innerHTML = '';
     textCari.value = '';
+    document.getElementById('judul').innerText = "Masukkan Buku Baru"; 
+    document.getElementById('bookSubmit').style.display = 'block';
+    document.getElementById('editSubmit').style.display = 'none'; 
+
+    document.getElementById('inputBookTitle').value = "";
+    document.getElementById('inputBookAuthor').value = "";
+    document.getElementById('inputBookYear').value = "";
+    document.getElementById('inputBookIsComplete').checked = false;
 
     for (const listBook of buku){
         const listBookElement = tambahListBook(listBook);
@@ -127,6 +137,10 @@ document.addEventListener(RENDER_EVENT, function(){
 });
 
 document.getElementById('inputBookIsComplete').addEventListener('click', function(){
+    cekIsComplete();
+});
+
+function cekIsComplete(){
     const centang = document.getElementById('inputBookIsComplete').checked;
     const textButton = document.getElementById('bookSubmit');
     if (centang){ 
@@ -134,7 +148,7 @@ document.getElementById('inputBookIsComplete').addEventListener('click', functio
     } else {
         textButton.innerHTML = "Masukkan Buku ke rak <span>Belum selesai dibaca</span>" 
     }
-});
+}
 
 function addToAlreadyRead(bookID){
     const bookTarget = cekListBook(bookID);
@@ -177,7 +191,7 @@ function isStorageExist() {
 }
 
 document.addEventListener(SAVED_EVENT, function () {
-    //  alert('Data Berhasil Disimpan !')
+    alert('Data Berhasil Disimpan !')
   });
 
 function saveBook() {
@@ -233,3 +247,40 @@ document.addEventListener(SEARCH_EVENT, function(){
         }
     }
 });
+
+function editListBook(bookID){
+    const editbookTarget = cekListBook(bookID);
+    const bookTargetIdx = cekListBookIndex(bookID);
+    const submitButton = document.getElementById('bookSubmit');
+    const editButton = document.getElementById('editSubmit');
+    submitButton.style.display='none';
+    editButton.style.display='block';
+
+    document.getElementById('inputBookTitle').value = editbookTarget.title;
+    document.getElementById('inputBookAuthor').value = editbookTarget.author;
+    document.getElementById('inputBookYear').value = editbookTarget.year;
+    document.getElementById('inputBookIsComplete').checked = editbookTarget.isComplete;
+    document.getElementById('judul').innerText = "Edit Data Buku";
+    document.getElementById('inputBookTitle').focus();
+    document.documentElement.scrollTop = 0
+    cekIsComplete();   
+    editButton.addEventListener('click', function(even){
+        even.preventDefault();
+        saveEditBook(bookTargetIdx);
+    });
+}
+
+function saveEditBook(index) {
+    const textTitle = document.getElementById('inputBookTitle').value;
+    const textAuthor = document.getElementById('inputBookAuthor').value;
+    const textTahun = document.getElementById('inputBookYear').value;
+    const isCompleted = document.getElementById('inputBookIsComplete').checked;
+
+    buku[index].title = textTitle;
+    buku[index].author = textAuthor;
+    buku[index].year = textTahun;
+    buku[index].isComplete = isCompleted;
+    
+    document.dispatchEvent(new Event(RENDER_EVENT));
+    saveBook();
+}
